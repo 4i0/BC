@@ -17,6 +17,14 @@ ClothCollegeOutfit1Skirt,Skirt
 ClothBodice1Base,Main
 ClothBodice1Trim,Trim
 ClothBodice1Pattern,Pattern
+ClothAdmiralTopJacket,Jacket
+ClothAdmiralTopTrim,Trim
+ClothAdmiralTopShirt,Shirt
+ClothSummerDressLayer1,Chest
+ClothSummerDressLayer2,Buttons
+ClothSummerDressLayer3,Arm Puffs
+ClothSummerDressLayer4,Trim
+ClothSummerDressBase,Dress
 ClothAccessoryBouquetBase,Holder
 ClothAccessoryBouquetFlowers,Flowers
 ClothAccessoryCapeFront,Front
@@ -41,12 +49,20 @@ ClothLowerLeggings1Cloth,Cloth
 ClothLowerLeggings1Stripe,Stripe
 ClothLowerLeggings2Cloth,Cloth
 ClothLowerLeggings2Stripe,Stripe
+ClothLowerTennisSkirt1Stripe,Trim
+ClothLowerTennisSkirt1Color,Cloth
+ClothLowerPajama1Cloth, Pants
+ClothLowerPajama1Stripe, Trim
+ClothLowerAdmiralSkirtCloth,Skirt
+ClothLowerAdmiralSkirtStripe,Trim
 SuitLowerCatsuitBase,Suit
 SuitLowerCatsuitZip,Zip
 SuitLowerSeethroughSuitZipBase,Suit
 SuitLowerSeethroughSuitZipZip,Zip
 PantiesDiapers2Diaper,Diaper
 PantiesDiapers2Cover,Plastic Cover
+PantiesFlowerPantiesPanties,Panties
+PantiesFlowerPantiesFlowers,Flowers
 SocksSocks6Sock,Sock
 SocksSocks6Frill,Trim
 SocksSocksFurFabric,Sock
@@ -259,11 +275,19 @@ ItemNeckFuturisticCollarDisplay,Display
 ItemNeckFuturisticCollarLock,Lock
 ItemNeckOrnateCollarCollar,Collar
 ItemNeckOrnateCollarGem,Gems
+ItemNeckShinySteelCollarCollar,Collar
+ItemNeckShinySteelCollarRing,Ring
 ItemNeckAccessoriesCustomCollarTagTag,Tag
 ItemNeckAccessoriesCustomCollarTagText,Text
 ItemNeckAccessoriesElectronicTagTag,Tag
 ItemNeckAccessoriesElectronicTagDisplay,Display
 ItemNeckAccessoriesElectronicTagText,Text
+ItemNeckRestraintsCollarRopeShortRope,Rope
+ItemNeckRestraintsCollarRopeShortPlate,Plate
+ItemNeckRestraintsCollarRopeMediumRope,Rope
+ItemNeckRestraintsCollarRopeMediumPlate,Plate
+ItemNeckRestraintsCollarRopeLongRope,Rope
+ItemNeckRestraintsCollarRopeLongPlate,Plate
 ItemMiscWoodenSignSign,Sign
 ItemMiscWoodenSignRope,Rope
 ItemMiscWoodenSignText,Text
@@ -309,6 +333,13 @@ ItemDevicesWoodenBoxBack,Wood
 ItemDevicesWoodenBoxText,Text
 ItemDevicesPetBowlBowl,Bowl
 ItemDevicesPetBowlText,Text
+ItemDevicesVacBedDeluxeSheetBack,Sheet Back
+ItemDevicesVacBedDeluxeSheetFront,Sheet Front
+ItemDevicesVacBedDeluxeSheet,Sheet
+ItemDevicesVacBedDeluxeUpper,Upper
+ItemDevicesVacBedDeluxeLower,Lower
+ItemDevicesVacBedDeluxeBody,Body
+ItemDevicesVacBedDeluxeFrame,Frame
 ItemAddonCoversOuter,Outer
 ItemAddonCoversInner,Inner
 ItemNoseNoseHookBand,Strap
@@ -325,7 +356,7 @@ ItemHoodAddonOldGasMaskLensesTube1Tube1,Tube
 ItemHoodAddonOldGasMaskLensesTube2Lenses,Lenses
 ItemHoodAddonOldGasMaskLensesTube2Tube2,Tube
 ItemHoodAddonOldGasMaskLensesRebreatherLenses,Lenses
-ItemHoodAddonOldGasMaskLensesRebreatherRebreather,Lenses
+ItemHoodAddonOldGasMaskLensesRebreatherRebreather,Rebreather
 ItemHoodKirugumiMaskMask,Face
 ItemHoodKirugumiMaskEyes1,Eyes
 ItemHoodKirugumiMaskMouth1,Mouth
@@ -350,6 +381,12 @@ ItemBootsFuturisticHeels2Display,Display
 ItemBootsFuturisticHeels2Lock,Lock
 ItemBootsLeatherFootMitts1Mitts,Mittens
 ItemBootsLeatherFootMitts1Straps,Straps
+ShoesFuturisticHeels2Mesh,Body
+ShoesFuturisticHeels2Shine,Shine
+ShoesFuturisticHeels2Cuffs,Cuffs
+ShoesFuturisticHeels2Trim,Trim
+ShoesFuturisticHeels2Soles,Heels
+ShoesFuturisticHeels2Lock,Lock
 ShoesBoots1Shoes,Inner
 ShoesBoots1Sides,Outer
 ShoesBoots1Laces,Laces
@@ -388,6 +425,7 @@ ItemMouthMedicalMaskInner,Inner
 ItemMouthMedicalMaskOuter,Outer
 ItemMouthPrisonLockdownGagMask,Mask
 ItemMouthPrisonLockdownGagStraps,Straps
+ItemMouthPrisonLockdownGagBelts,Belts
 ItemMouthCarrotGagCarrot,Carrot
 ItemMouthCarrotGagStraps,Straps
 ItemMouthPumpkinGagPumpkin,Pumpkin
@@ -460,6 +498,7 @@ ItemMouth2MedicalMaskInner,Inner
 ItemMouth2MedicalMaskOuter,Outer
 ItemMouth2PrisonLockdownGagMask,Mask
 ItemMouth2PrisonLockdownGagStraps,Straps
+ItemMouth2PrisonLockdownGagBelts,Belts
 ItemMouth2CarrotGagCarrot,Carrot
 ItemMouth2CarrotGagStraps,Straps
 ItemMouth2PumpkinGagPumpkin,Pumpkin
@@ -516,6 +555,7 @@ ItemMouth3MedicalMaskInner,Inner
 ItemMouth3MedicalMaskOuter,Outer
 ItemMouth3PrisonLockdownGagMask,Mask
 ItemMouth3PrisonLockdownGagStraps,Straps
+ItemMouth3PrisonLockdownGagBelts,Belts
 ItemMouth3CarrotGagCarrot,Carrot
 ItemMouth3CarrotGagStraps,Straps
 ItemMouth3PumpkinGagPumpkin,Pumpkin
@@ -571,14 +611,17 @@ ItemBreastFuturisticBra2Lock,Lock
 ItemBreastFuturisticBra2Straps,Straps
 ItemPelvisFuturisticChastityBeltScreen,Screen
 ItemPelvisFuturisticChastityBeltMesh,Mesh
-ItemPelvisFuturisticChastityBeltBelt,Belt
+ItemPelvisFuturisticChastityBeltMesh2_3,Padding
+ItemPelvisFuturisticChastityBeltPlug_2,Plug
+ItemPelvisFuturisticChastityBeltBelt,Front
 ItemPelvisFuturisticChastityBeltLock,Lock
-ItemPelvisFuturisticChastityBelt2Screen,Screen
-ItemPelvisFuturisticChastityBelt2Mesh,Mesh
-ItemPelvisFuturisticChastityBelt2Belt,Belt
-ItemPelvisFuturisticChastityBelt2Lock,Lock
-ItemPelvisFuturisticChastityBelt2Band,Band
-ItemPelvisFuturisticChastityBelt2Plug,Plug
+ItemPelvisFuturisticChastityBeltBand_2,Band
+ItemPelvisFuturisticTrainingBeltDisplay,Screen
+ItemPelvisFuturisticTrainingBeltMesh,Body
+ItemPelvisFuturisticTrainingBeltMesh2,Padding
+ItemPelvisFuturisticTrainingBeltBelt,Front
+ItemPelvisFuturisticTrainingBeltBand,Band
+ItemPelvisFuturisticTrainingBeltLock,Lock
 ItemPelvisSciFiPleasurePantiesScreen,Interface
 ItemPelvisSciFiPleasurePantiesMesh2,Panty Base
 ItemPelvisSciFiPleasurePantiesMesh1,Wires
@@ -619,3 +662,9 @@ ClothAccessoryBunnyCollarCuffsCollar,Collar
 ClothAccessoryBunnyCollarCuffsBow,Bow
 ItemHeadPaddedBlindfoldBase,Blindfold
 ItemHeadPaddedBlindfoldTrim,Trim
+ItemDevicesWetFloorSign,Sign
+ItemDevicesWetFloorText,Text
+BraCuteBikini1Main,Main
+BraCuteBikini1Sides,Sides
+BraSexyBikini1Main,Main
+BraSexyBikini1Sides,Sides

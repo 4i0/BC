@@ -55,6 +55,8 @@ var PreferenceDifficultyLevel = null;
 var PreferenceDifficultyAccept = false;
 var PreferenceGraphicsFontList = ["Arial", "TimesNewRoman", "Papyrus", "ComicSans", "Impact", "HelveticaNeue", "Verdana", "CenturyGothic", "Georgia", "CourierNew", "Copperplate"];
 var PreferenceGraphicsFontIndex = 0;
+var PreferenceGraphicsAnimationQualityIndex = null;
+var PreferenceGraphicsAnimationQualityList = [200, 100, 50, 0];
 var PreferenceCalibrationStage = 0;
 
 /**
@@ -179,7 +181,7 @@ function PreferenceGetFactorColor(Factor) {
 
 /**
  * Checks, if the arousal activity controls must be activated
- * @returns {void} - Returns true if we must activate the preference controls, false otherwise
+ * @returns {boolean} - Returns true if we must activate the preference controls, false otherwise
  */
 function PreferenceArousalIsActive() {
 	return (PreferenceArousalActiveList[PreferenceArousalActiveIndex] != "Inactive");
@@ -307,7 +309,7 @@ function PreferenceInitPlayer() {
 	if (typeof C.ChatSettings.WhiteSpace !== "string") C.ChatSettings.WhiteSpace = "Preserve";
 	if (typeof C.ChatSettings.ColorActivities !== "boolean") C.ChatSettings.ColorActivities = true;
 	if (typeof C.ChatSettings.ShrinkNonDialogue !== "boolean") C.ChatSettings.ShrinkNonDialogue = false;
-	
+
 
 	// Visual settings
 	if (!C.VisualSettings) C.VisualSettings = {};
@@ -412,6 +414,7 @@ function PreferenceInitPlayer() {
 		}
 		C.OnlineSharedSettings.GameVersion = GameVersion;
 	}
+	if (typeof C.OnlineSharedSettings.ItemsAffectExpressions !== "boolean") C.OnlineSharedSettings.ItemsAffectExpressions = true;
 
 	// Graphical settings
 	if (!C.GraphicsSettings) C.GraphicsSettings = {};
@@ -419,6 +422,7 @@ function PreferenceInitPlayer() {
 	if (typeof C.GraphicsSettings.InvertRoom !== "boolean") C.GraphicsSettings.InvertRoom = true;
 	if (typeof C.GraphicsSettings.StimulationFlashes !== "boolean") C.GraphicsSettings.StimulationFlashes = true;
 	if (typeof C.GraphicsSettings.DoBlindFlash !== "boolean") C.GraphicsSettings.DoBlindFlash = false;
+	if (typeof C.GraphicsSettings.AnimationQuality !== "number") C.GraphicsSettings.AnimationQuality = 100;
 
 	// Notification settings
 	let NS = C.NotificationSettings;
@@ -499,7 +503,7 @@ function PreferenceInitPlayer() {
 			toUpdate[prop] = C[prop];
 
 	if (Object.keys(toUpdate).length > 0) {
-		ServerSend("AccountUpdate", toUpdate);
+		ServerAccountUpdate.QueueData(toUpdate);
 	}
 }
 
@@ -507,7 +511,7 @@ function PreferenceInitPlayer() {
  * Initialise the Notifications settings, converting the old boolean types to objects
  * @param {object} setting - The old version of the setting
  * @param {NotificationAudioType} audio - The audio setting
- * @param {NotificationAlertType} defaultAlertType - The default AlertType to use
+ * @param {NotificationAlertType} [defaultAlertType] - The default AlertType to use
  * @returns {NotificationSetting} - The setting to use
  */
 function PreferenceInitNotificationSetting(setting, audio, defaultAlertType) {
@@ -575,9 +579,9 @@ function PreferenceLoad() {
 	PreferenceArousalFetishIndex = 0;
 	PreferenceLoadFetishFactor();
 
-	// Sets the Players text font
+	// Prepares the graphics settings
 	PreferenceGraphicsFontIndex = (PreferenceGraphicsFontList.indexOf(Player.GraphicsSettings.Font) < 0) ? 0 : PreferenceGraphicsFontList.indexOf(Player.GraphicsSettings.Font);
-
+	PreferenceGraphicsAnimationQualityIndex = (PreferenceGraphicsAnimationQualityList.indexOf(Player.GraphicsSettings.AnimationQuality) < 0) ? 0 : PreferenceGraphicsAnimationQualityList.indexOf(Player.GraphicsSettings.AnimationQuality);
 }
 
 /**
@@ -632,11 +636,12 @@ function PreferenceSubscreenGeneralRun() {
 	// Checkboxes (Some are not available when playing on Hardcore or Extreme)
 	DrawCheckbox(500, 402, 64, 64, TextGet("ForceFullHeight"), Player.VisualSettings.ForceFullHeight);
 	DrawCheckbox(500, 482, 64, 64, TextGet("DisablePickingLocksOnSelf"), Player.OnlineSharedSettings.DisablePickingLocksOnSelf);
-	if (Player.GetDifficulty() < 2) {
-		DrawCheckbox(500, 722, 64, 64, TextGet(PreferenceSafewordConfirm ? "ConfirmSafeword" : "EnableSafeword"), Player.GameplaySettings.EnableSafeword);
-		DrawCheckbox(500, 562, 64, 64, TextGet("DisableAutoMaid"), !Player.GameplaySettings.DisableAutoMaid);
-		DrawCheckbox(500, 642, 64, 64, TextGet("OfflineLockedRestrained"), Player.GameplaySettings.OfflineLockedRestrained);
-	} else DrawText(TextGet("GeneralHardcoreWarning"), 500, 622, "Red", "Gray");
+	const onHighDifficulty = Player.GetDifficulty() >= 2;
+	DrawCheckbox(500, 722, 64, 64, TextGet(PreferenceSafewordConfirm ? "ConfirmSafeword" : "EnableSafeword"), Player.GameplaySettings.EnableSafeword, onHighDifficulty);
+	DrawCheckbox(500, 562, 64, 64, TextGet("DisableAutoMaid"), !Player.GameplaySettings.DisableAutoMaid, onHighDifficulty);
+	DrawCheckbox(500, 642, 64, 64, TextGet("OfflineLockedRestrained"), Player.GameplaySettings.OfflineLockedRestrained, onHighDifficulty);
+	if (onHighDifficulty) DrawTextWrap(TextGet("GeneralHardcoreWarning"), 1225, 622, 450, 100, "Red");
+	DrawCheckbox(500, 802, 64, 64, TextGet("ItemsAffectExpressions"), Player.OnlineSharedSettings.ItemsAffectExpressions);
 
 	// Draw the player & controls
 	DrawCharacter(Player, 50, 50, 0.9);
@@ -780,6 +785,7 @@ function PreferenceSubscreenGeneralClick() {
 	} else PreferenceSafewordConfirm = false;
 	if (MouseIn(500, 562, 64, 64) && (Player.GetDifficulty() < 2)) Player.GameplaySettings.DisableAutoMaid = !Player.GameplaySettings.DisableAutoMaid;
 	if (MouseIn(500, 642, 64, 64) && (Player.GetDifficulty() < 2)) Player.GameplaySettings.OfflineLockedRestrained = !Player.GameplaySettings.OfflineLockedRestrained;
+	if (MouseIn(500, 802, 64, 64)) Player.OnlineSharedSettings.ItemsAffectExpressions = !Player.OnlineSharedSettings.ItemsAffectExpressions;
 }
 
 /**
@@ -958,7 +964,7 @@ function PreferenceExit() {
 			LabelColor: Player.LabelColor,
 			LimitedItems: CommonPackItemArray(Player.LimitedItems),
 		};
-		ServerSend("AccountUpdate", P);
+		ServerAccountUpdate.QueueData(P);
 		PreferenceMessage = "";
 		CommonSetScreen("Character", "InformationSheet");
 	}
@@ -1253,6 +1259,7 @@ function PreferenceSubscreenGraphicsRun() {
 	DrawCheckbox(500, 470, 64, 64, TextGet("GraphicsInvertRoom"), Player.GraphicsSettings.InvertRoom);
 	DrawCheckbox(500, 550, 64, 64, TextGet("GraphicsStimulationFlash"), Player.GraphicsSettings.StimulationFlash);
 	DrawCheckbox(500, 630, 64, 64, TextGet("DoBlindFlash"), Player.GraphicsSettings.DoBlindFlash);
+	DrawText(TextGet("GeneralAnimationQualityText"), 750, 742, "Black", "Gray");
 
 	MainCanvas.textAlign = "center";
 	DrawBackNextButton(500, 212, 250, 64, TextGet(Player.ArousalSettings.VFX), "White", "",
@@ -1262,6 +1269,10 @@ function PreferenceSubscreenGraphicsRun() {
 	DrawBackNextButton(500, 300, 250, 64, TextGet(Player.GraphicsSettings.Font), "White", "",
 		() => TextGet(PreferenceGraphicsFontList[(PreferenceGraphicsFontIndex + PreferenceGraphicsFontList.length - 1) % PreferenceGraphicsFontList.length]),
 		() => TextGet(PreferenceGraphicsFontList[(PreferenceGraphicsFontIndex + 1) % PreferenceGraphicsFontList.length]));
+
+	DrawBackNextButton(500, 710, 200, 64, TextGet("GeneralAnimationQuality" + Player.GraphicsSettings.AnimationQuality), "White", "",
+		() => PreferenceGraphicsAnimationQualityIndex == 0 ? "" : TextGet("GeneralAnimationQuality" + PreferenceGraphicsAnimationQualityList[PreferenceGraphicsAnimationQualityIndex - 1].toString()),
+		() => PreferenceGraphicsAnimationQualityIndex == PreferenceGraphicsAnimationQualityList.length - 1 ? "" : TextGet("GeneralAnimationQuality" + PreferenceGraphicsAnimationQualityList[PreferenceGraphicsAnimationQualityIndex + 1].toString()));
 }
 
 /**
@@ -1285,6 +1296,14 @@ function PreferenceSubscreenGraphicsClick() {
 	if (MouseIn(500, 470, 64, 64)) Player.GraphicsSettings.InvertRoom = !Player.GraphicsSettings.InvertRoom;
 	if (MouseIn(500, 550, 64, 64)) Player.GraphicsSettings.StimulationFlash = !Player.GraphicsSettings.StimulationFlash;
 	if (MouseIn(500, 630, 64, 64)) Player.GraphicsSettings.DoBlindFlash = !Player.GraphicsSettings.DoBlindFlash;
+	if (MouseIn(500, 710, 200, 64)) {
+		if (MouseX <= 600) {
+			if (PreferenceGraphicsAnimationQualityIndex > 0) PreferenceGraphicsAnimationQualityIndex--;
+		} else {
+			if (PreferenceGraphicsAnimationQualityIndex < PreferenceGraphicsAnimationQualityList.length - 1) PreferenceGraphicsAnimationQualityIndex++;
+		}
+		Player.GraphicsSettings.AnimationQuality = PreferenceGraphicsAnimationQualityList[PreferenceGraphicsAnimationQualityIndex];
+	}
 }
 
 /**
