@@ -10,6 +10,7 @@ var ChatAdminGameList = ["", "LARP"];
 var ChatAdminBackgroundSelected = null;
 var ChatAdminTemporaryData = null;
 var ChatAdminBlockCategory = [];
+var ChatAdminInitialLoad = false;
 
 /**
  * Loads the chat Admin screen properties and creates the inputs
@@ -22,7 +23,7 @@ function ChatAdminLoad() {
 	ChatAdminBackgroundIndex = ChatCreateBackgroundList.indexOf(ChatAdminBackgroundSelect);
 	if (ChatAdminBackgroundIndex < 0) ChatAdminBackgroundIndex = 0;
 	ChatAdminBackgroundSelect = ChatCreateBackgroundList[ChatAdminBackgroundIndex];
-	ChatAdminBlockCategory = ChatRoomData.BlockCategory;
+	if (!ChatAdminInitialLoad) ChatAdminBlockCategory = ChatRoomData.BlockCategory.slice();
 	ChatAdminGame = ChatRoomGame;
 
 	// Prepares the controls to edit a room
@@ -51,8 +52,8 @@ function ChatAdminLoad() {
 		document.getElementById("InputDescription").setAttribute("disabled", "disabled");
 
 		// We also garble them if possible
-		ElementValue("InputName", ChatSearchMuffle(ChatAdminTemporaryData ? ChatAdminTemporaryData.Name : ChatRoomData.Name, true));
-		ElementValue("InputDescription", ChatSearchMuffle(ChatAdminTemporaryData ? ChatAdminTemporaryData.Description : ChatRoomData.Description, true));
+		ElementValue("InputName", ChatSearchMuffle(ChatAdminTemporaryData ? ChatAdminTemporaryData.Name : ChatRoomData.Name));
+		ElementValue("InputDescription", ChatSearchMuffle(ChatAdminTemporaryData ? ChatAdminTemporaryData.Description : ChatRoomData.Description));
 
 
 		document.getElementById("InputAdminList").setAttribute("disabled", "disabled");
@@ -60,7 +61,9 @@ function ChatAdminLoad() {
 		document.getElementById("InputSize").setAttribute("disabled", "disabled");
 		ChatAdminMessage = "AdminOnly";
 	} else ChatAdminMessage = "UseMemberNumbers";
+	ChatAdminInitialLoad = true;
 
+	TextPrefetch("Online", "ChatBlockItem");
 }
 
 /**
@@ -183,6 +186,7 @@ function ChatAdminExit() {
 	ElementRemove("InputAdminList");
 	ElementRemove("InputBanList");
 	CommonSetScreen("Online", "ChatRoom");
+	ChatAdminInitialLoad = false;
 }
 
 /**

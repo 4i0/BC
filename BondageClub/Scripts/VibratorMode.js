@@ -40,10 +40,12 @@ var VibratorModeState = {
 /**
  * An enum for the vibrator configuration sets that a vibrator can have
  * @readonly
- * @enum {string}
+ * @enum {"Standard"|"Advanced"}
  */
 var VibratorModeSet = {
+	/** @type {"Standard"} */
 	STANDARD: "Standard",
+	/** @type {"Advanced"} */
 	ADVANCED: "Advanced",
 };
 
@@ -187,6 +189,7 @@ function VibratorModeDrawHeader() {
  */
 function VibratorModeDrawControls(Options, Y) {
 	Y = typeof Y === "number" ? Y : 450;
+	let C = CharacterGetCurrent();
 	Options = Options || [VibratorModeSet.STANDARD];
 	var Property = DialogFocusItem.Property;
 	if (Property == null) return;
@@ -198,7 +201,7 @@ function VibratorModeDrawControls(Options, Y) {
 		OptionGroup.forEach((Option, I) => {
 			var X = 1175 + (I % 3) * 225;
 			if (I % 3 === 0) Y += 75;
-			var Color = Property.Mode === Option.Property.Mode ? "#888" : "White";
+			var Color = Property.Mode === Option.Property.Mode ? "#888" : (!(OptionName == VibratorModeSet.ADVANCED && C.ArousalSettings && C.ArousalSettings.DisableAdvancedVibes) ? "White" : "Pink");
 			DrawButton(X, Y, 200, 55, DialogFindPlayer(Option.Name), Color);
 		});
 		Y += 40;
@@ -213,6 +216,7 @@ function VibratorModeDrawControls(Options, Y) {
  */
 function VibratorModeClick(Options, Y) {
 	Y = typeof Y === "number" ? Y : 450;
+	let C = CharacterGetCurrent();
 	// Exit Button
 	if (MouseIn(1885, 25, 90, 85)) DialogFocusItem = null;
 
@@ -222,7 +226,7 @@ function VibratorModeClick(Options, Y) {
 			var X = 1175 + (I % 3) * 225;
 			if (I % 3 === 0) Y += 75;
 			if (MouseIn(X, Y, 200, 55)) {
-				if ((Option.Property != null) && (DialogFocusItem.Property != null) && (Option.Property.Mode !== DialogFocusItem.Property.Mode))
+				if ((Option.Property != null) && (DialogFocusItem.Property != null) && (Option.Property.Mode !== DialogFocusItem.Property.Mode) && !(OptionName == VibratorModeSet.ADVANCED && C.ArousalSettings && C.ArousalSettings.DisableAdvancedVibes))
 					VibratorModeSetMode(Option);
 				return true;
 			}
@@ -273,6 +277,7 @@ function VibratorModeSetMode(Option) {
 	ChatRoomCharacterItemUpdate(C, C.FocusGroup.Name);
 
 	var Message;
+	/** @type {ChatMessageDictionary} */
 	var Dictionary = [
 		{ Tag: "DestinationCharacterName", Text: C.Name, MemberNumber: C.MemberNumber },
 		{ Tag: "AssetName", AssetName: DialogFocusItem.Asset.Name },
@@ -496,7 +501,7 @@ function VibratorModeStateUpdateDeny(C, Arousal, TimeSinceLastChange, OldIntensi
 			// Here we give the fake orgasm, passing a special parameter that indicates we bypass the usual restriction on Edge
 			ActivityOrgasmPrepare(C, true);
 		}
-		
+
 		// Set the vibrator to rest
 		State = VibratorModeState.REST;
 		Intensity = -1;
@@ -588,6 +593,7 @@ function VibratorModePublish(C, Item, OldIntensity, Intensity) {
 	if (OldIntensity === Intensity) return;
 
 	var Direction = Intensity > OldIntensity ? "Increase" : "Decrease";
+	/** @type {ChatMessageDictionary} */
 	var Dictionary = [
 		{ Tag: "DestinationCharacterName", Text: C.Name, MemberNumber: C.MemberNumber },
 		{ Tag: "AssetName", AssetName: Item.Asset.Name },

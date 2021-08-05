@@ -29,7 +29,7 @@ function InventoryItemFeetFuturisticAnkleCuffsDraw() {
 	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagDrawAccessDenied();
 	} else
-		ExtendedItemDraw(InventoryItemFeetFuturisticAnkleCuffsOptions, "LeatherAnkleCuffsPose");
+		ExtendedItemDraw(InventoryItemFeetFuturisticAnkleCuffsOptions, "ItemFeetSteelAnkleCuffs");
 }
 
 // Catches the item extension clicks
@@ -46,15 +46,16 @@ function InventoryItemFeetFuturisticAnkleCuffsExit() {
 	InventoryItemMouthFuturisticPanelGagExitAccessDenied();
 }
 
-function InventoryItemFeetFuturisticAnkleCuffsValidate(C, Option) {
-	return InventoryItemMouthFuturisticPanelGagValidate(C, Option);
+function InventoryItemFeetFuturisticAnkleCuffsValidate(C, Item) {
+	return InventoryItemMouthFuturisticPanelGagValidate(C, Item);
 }
 
 function InventoryItemFeetFuturisticAnkleCuffsPublishAction(C, Option) {
-	var msg = "FuturisticAnkleCuffsRestrain" + Option.Name;
+	var msg = "ItemFeetSteelAnkleCuffsSet" + Option.Name;
 	var Dictionary = [];
 	Dictionary.push({ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber });
 	Dictionary.push({ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber });
+	Dictionary.push({ Tag: "AssetName", AssetName: DialogFocusItem.Asset.Name });
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
 

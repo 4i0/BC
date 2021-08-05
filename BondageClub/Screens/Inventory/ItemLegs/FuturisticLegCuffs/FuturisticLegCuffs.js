@@ -38,7 +38,7 @@ function InventoryItemLegsFuturisticLegCuffsDraw() {
 	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagDrawAccessDenied();
 	} else {
-		ExtendedItemDraw(InventoryItemLegsFuturisticLegCuffsOptions, "LeatherLegCuffsPose");
+		ExtendedItemDraw(InventoryItemLegsFuturisticLegCuffsOptions, "ItemFeetSteelAnkleCuffs");
 	}
 }
 
@@ -66,6 +66,7 @@ function InventoryItemLegsFuturisticLegCuffsPublishAction(C, Option) {
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
+		{ Tag: "AssetName", AssetName: DialogFocusItem.Asset.Name },
 	];
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
@@ -92,9 +93,9 @@ function InventoryItemLegsFuturisticLegCuffsExit() {
 /**
  * Validates whether or not the player has access to the item's extended item screen
  * @param {Character} C - The character on whom the restraint is applied
- * @param {Option} Option - The current option for this extended item
+ * @param {Item} Item - The equipped item
  * @returns {string} - Returns a validation message if validation fails, or an empty string otherwise
  */
-function InventoryItemLegsFuturisticLegCuffsValidate(C, Option) {
-	return InventoryItemMouthFuturisticPanelGagValidate(C, Option);
+function InventoryItemLegsFuturisticLegCuffsValidate(C, Item) {
+	return InventoryItemMouthFuturisticPanelGagValidate(C, Item);
 }

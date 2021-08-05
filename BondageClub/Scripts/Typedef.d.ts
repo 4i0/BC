@@ -11,8 +11,108 @@ type MemoizedFunction<T extends Function> = T & {
 	clearCache(): void;
 };
 
+// GL shim
+interface WebGL2RenderingContext {
+	program?: WebGLProgram;
+	programFull?: WebGLProgram;
+	programHalf?: WebGLProgram;
+	textureCache?: Map<string, any>;
+	maskCache?: Map<string, any>;
+}
+
+interface WebGLProgram {
+	u_alpha?: WebGLUniformLocation;
+	u_color?: WebGLUniformLocation;
+	a_position?: number;
+	a_texcoord?: number;
+	u_matrix?: WebGLUniformLocation;
+	u_texture?: WebGLUniformLocation;
+	u_alpha_texture?: WebGLUniformLocation;
+	position_buffer?: WebGLBuffer;
+	texcoord_buffer?: WebGLBuffer;
+}
+
+interface HTMLCanvasElement {
+	GL?: WebGL2RenderingContext;
+}
+
+interface HTMLImageElement {
+	errorcount?: number;
+}
+
 //#endregion
 
+//#region Enums
+type ExtendedArchetype = "modular" | "typed";
+type TypedItemChatSetting = "toOnly" | "fromTo" | "silent";
+type ModularItemChatSetting = "perModule" | "perOption";
+type CommonChatTags =
+	| "SourceCharacter"
+	| "DestinationCharacter"
+	| "DestinationCharacterName"
+	| "TargetCharacter"
+	| "TargetCharacterName"
+	| "AssetName";
+
+type NotificationAudioType = 0 | 1 | 2;
+type NotificationAlertType = 0 | 1 | 3 | 2;
+
+type DialogSortOrder = | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
+//#endregion
+
+//#region index.html
+
+/**
+ * Main game running state, runs the drawing
+ * @param {number} Timestamp
+ */
+declare function MainRun(Timestamp: number): void;
+
+/**
+ * When the user presses a key, we send the KeyDown event to the current screen if it can accept it
+ * @param {KeyboardEvent} event
+ */
+declare function KeyDown(event: KeyboardEvent): void;
+
+/**
+ * Handler for document-wide keydown event
+ * @param {KeyboardEvent} event
+ */
+declare function DocumentKeyDown(event: KeyboardEvent): void;
+
+/**
+ * When the user clicks, we fire the click event for other screens
+ * @param {MouseEvent} event
+ */
+declare function Click(event: MouseEvent): void;
+
+/**
+ * When the user touches the screen (mobile only), we fire the click event for other screens
+ * @param {TouchEvent} event
+ */
+declare function TouchStart(event: TouchEvent): void;
+
+/**
+ * When touch moves, we keep it's position for other scripts
+ * @param {Touch} touch
+ */
+declare function TouchMove(touch: Touch): void;
+
+/**
+ * When mouse move, we keep the mouse position for other scripts
+ * @param {MouseEvent} event
+ */
+declare function MouseMove(event: MouseEvent): void;
+
+/**
+ * When the mouse is away from the control, we stop keeping the coordinates,
+ * we also check for false positives with "relatedTarget"
+ * @param {MouseEvent} event
+ */
+declare function LoseFocus(event: MouseEvent): void;
+
+//#endregion
 
 type IAssetFamily = "Female3DCG";
 
@@ -27,6 +127,7 @@ interface AssetGroup {
 	AllowNone: boolean;
 	AllowColorize: boolean;
 	AllowCustomize: boolean;
+	Random?: boolean;
 	ColorSchema: string[];
 	ParentSize: string;
 	ParentColor: string;
@@ -51,7 +152,7 @@ interface AssetGroup {
 	DrawingBlink: boolean;
 	InheritColor?: string;
 	FreezeActivePose: string[];
-	PreviewZone?: [number, number, number, number][];
+	PreviewZone?: [number, number, number, number];
 	DynamicGroupName: string;
 }
 
@@ -195,14 +296,14 @@ interface Asset {
 	IsRestraint: boolean;
 	BodyCosplay: boolean;
 	OverrideBlinking: boolean;
-	DialogSortOverride?: number;
+	DialogSortOverride?: DialogSortOrder;
 	DynamicDescription: (C: Character) => string;
-	DynamicPreviewIcon: (C: Character) => string;
+	DynamicPreviewImage: (C: Character) => string;
 	DynamicAllowInventoryAdd: (C: Character) => boolean;
-	DynamicExpressionTrigger: (C: Character) => ExpressionTrigger[];
-	DynamicName: (C?: Character) => string;
+	DynamicExpressionTrigger: (C: Character) => ExpressionTrigger[] | null | undefined;
+	DynamicName: (C: Character) => string;
 	DynamicGroupName: string;
-	DynamicActivity: () => string[] | string | undefined;
+	DynamicActivity: (C: Character) => string[] | string | null | undefined;
 	DynamicAudio: ((C: Character) => string) | null;
 	CharacterRestricted: boolean;
 	AllowRemoveExclusive: boolean;
@@ -224,6 +325,7 @@ interface Asset {
 	ColorableLayerCount: number;
 	Archetype?: string;
 	Attribute: string[];
+	PreviewIcons: string[];
 }
 
 /** An ItemBundle is a minified version of the normal Item */
@@ -247,12 +349,27 @@ interface Pose {
 	MovePosition?: { Group: string; X: number; Y: number; }[];
 }
 
+interface ChatMessageDictionaryEntry {
+	[k: string]: any;
+	Tag?: string;
+	Text?: string;
+	MemberNumber?: number;
+}
+
+type ChatMessageDictionary = ChatMessageDictionaryEntry[];
+
 interface Activity {
 	Name: string;
 	MaxProgress: number;
 	Prerequisite: string[];
 	TargetSelf?: string[];
 	MakeSound?: boolean;
+}
+
+interface LogRecord {
+	Name: string;
+	Group: string;
+	Value: number;
 }
 
 /** An item is a pair of asset and its dynamic properties that define a worn asset. */
@@ -263,10 +380,25 @@ interface Item {
 	Property?: ItemProperties;
 }
 
+interface DialogInventoryItem extends Item {
+	Worn: boolean;
+	Icons: string[];
+	SortOrder: string;
+	Hidden: boolean;
+	Vibrating: boolean;
+}
+
+interface InventoryItem {
+	Group: string;
+	Name: string;
+	Asset: Asset;
+}
+
 interface Skill {
 	Type: string;
 	Level: number;
 	Progress: number;
+	Ratio?: number;
 }
 
 interface Reputation {
@@ -286,6 +418,42 @@ interface Lovership {
 	MemberNumber?: number;
 	Stage?: number;
 	Start?: number;
+	// Bad data sometimes received from server
+	BeginDatingOfferedByMemberNumber?: unknown;
+	BeginEngagementOfferedByMemberNumber?: unknown;
+	BeginWeddingOfferedByMemberNumber?: unknown;
+}
+
+interface ScreenFunctions {
+	// Required
+	/**
+	 * Called each frame
+	 * @param {number} time - The current time for frame
+	 */
+	Run(time: number): void;
+	/**
+	 * Called when user clicks on the canvas
+	 * @param {MouseEvent | TouchEvent} event - The event that triggered this
+	 */
+	Click(event: MouseEvent | TouchEvent): void;
+
+	// Optional
+	/** Called when screen is loaded using `CommonSetScreen` */
+	Load?(): void;
+	/** Called when this screen is being replaced */
+	Unload?(): void;
+	/**
+	 * Called when screen size or position changes or after screen load
+	 * @param {boolean} load - If the reason for call was load (`true`) or window resize (`false`)
+	 */
+	Resize?(load: boolean): void;
+	/**
+	 * Called when user presses any key
+	 * @param {KeyboardEvent} event - The event that triggered this
+	 */
+	KeyDown?(event: KeyboardEvent): void;
+	/** Called when user presses Esc */
+	Exit?(): void;
 }
 
 interface Character {
@@ -298,7 +466,7 @@ interface Character {
 	Owner: string;
 	Lover: string;
 	Money: number;
-	Inventory: any[];
+	Inventory: InventoryItem[];
 	Appearance: Item[];
 	Stage: string;
 	CurrentDialog: string;
@@ -307,13 +475,14 @@ interface Character {
 	Skill: Skill[];
 	Pose: string[];
 	Effect: string[];
-	FocusGroup: AssetGroup;
-	Canvas: HTMLCanvasElement;
-	CanvasBlink: HTMLCanvasElement;
+	FocusGroup: AssetGroup | null;
+	Canvas: HTMLCanvasElement | null;
+	CanvasBlink: HTMLCanvasElement | null;
 	MustDraw: boolean;
 	BlinkFactor: number;
 	AllowItem: boolean;
 	BlockItems: any[];
+	FavoriteItems: any[];
 	LimitedItems: any[];
 	WhiteList: number[];
 	HeightModifier: number;
@@ -347,6 +516,7 @@ interface Character {
 	HiddenItems: any[];
 	HeightRatio: number;
 	HasHiddenItems: boolean;
+	SavedColors: HSVColor[];
 	GetBlindLevel: (eyesOnly?: boolean) => number;
 	IsLocked: () => boolean;
 	IsMounted: () => boolean;
@@ -392,9 +562,10 @@ interface Character {
 		OrgasmTimer?: number;
 		OrgasmStage?: number;
 		OrgasmCount?: number;
+		DisableAdvancedVibes: boolean;
 	};
 	AppearanceFull?: Item[];
-	Trait?: any[];
+	Trait?: NPCTrait[];
 	Event?: any[];
 	// Online character properties
 	Title?: string;
@@ -418,13 +589,19 @@ interface Character {
 	Love?: number;
 	Difficulty?: {
 		Level: number;
+		LastChange?: number;
 	};
 	ArousalZoom?: boolean;
 	FixedImage?: string;
+	Rule?: LogRecord[];
 }
 
 interface PlayerCharacter extends Character {
 	ChatSettings?: {
+		ColorTheme: string;
+		EnterLeave: string;
+		MemberNumbers: string;
+		FontSize: string;
 		DisplayTimestamps: boolean;
 		ColorNames: boolean;
 		ColorActions: boolean;
@@ -434,9 +611,14 @@ interface PlayerCharacter extends Character {
 		WhiteSpace: string;
 		ColorActivities: boolean;
 		ShrinkNonDialogue: boolean;
+		MuStylePoses: boolean;
+		ShowChatHelp: boolean;
 	};
 	VisualSettings?: {
 		ForceFullHeight: boolean;
+		UseCharacterInPreviews: boolean;
+		MainHallBackground?: string;
+		PrivateRoomBackground?: string;
 	};
 	AudioSettings?: {
 		Volume: number;
@@ -478,6 +660,7 @@ interface PlayerCharacter extends Character {
 		ReturnToChatRoomAdmin: boolean;
 		SenseDepMessages: boolean;
 		ChatRoomMuffle: boolean;
+		BlindAdjacent: boolean;
 	};
 	LastChatRoom?: string;
 	LastChatRoomBG?: string;
@@ -506,6 +689,7 @@ interface PlayerCharacter extends Character {
 		StimulationFlashes: boolean;
 		DoBlindFlash: boolean;
 		AnimationQuality: number;
+		StimulationFlash: boolean;
 	}
 	NotificationSettings?: {
 		/** @deprecated */
@@ -538,9 +722,18 @@ interface PlayerCharacter extends Character {
 	Wardrobe?: any[][];
 	WardrobeCharacterNames?: string[];
 	SavedExpressions?: any[];
+	SavedColors: HSVColor[];
 	FriendList?: number[];
 	FriendNames?: Map<number, string>;
-	SubmissivesList?: Set<number>
+	SubmissivesList?: Set<number>;
+	KinkyDungeonKeybindings?: any;
+	KinkyDungeonExploredLore: any[];
+	Infiltration?: any;
+}
+
+interface NPCTrait {
+	Name: string;
+	Value: number;
 }
 
 //#region Extended items
@@ -581,7 +774,7 @@ interface ExtendedItemOption {
 	/** The required self-bondage skill level for this option when using it on oneself */
 	SelfBondageLevel?: number;
 	/** The required prerequisites that must be met before this option can be selected */
-	Prerequisite?: string|string[];
+	Prerequisite?: string | string[];
 	/**
 	 * Whether or not prerequisites should be considered on the character's
 	 * appearance without the item equipped. Should be set to `true` if the item itself might interfere with prerequisites on
@@ -599,11 +792,13 @@ interface ExtendedItemOption {
 	/**
 	 * Trigger this expression when changing to this option
 	 *
-	 * **Curretnly broken!**
+	 * FIXME: **Currently broken!**
 	 */
 	Expression?: ExpressionTrigger[];
 	/** Whether or not the option should open a subscreen in the extended item menu */
 	HasSubscreen?: boolean;
+	/** Whether or not this option can be selected randomly */
+	Random?: boolean;
 }
 
 //#endregion
@@ -650,6 +845,14 @@ interface ModularItemOption {
 	BondageLevel?: number;
 	/** The required self-bondage skill level for this option when using it on oneself */
 	SelfBondageLevel?: number;
+	/** The required prerequisites that must be met before this option can be selected */
+	Prerequisite?: string | string[];
+	/**
+	 * Whether or not prerequisites should be considered on the character's
+	 * appearance without the item equipped. Should be set to `true` if the item itself might interfere with prerequisites on
+	 * some of its options
+	 */
+	SelfBlockCheck?: boolean;
 	/** A list of groups that this option blocks - defaults to [] */
 	Block?: string[];
 	/** A list of groups that this option hides - defaults to [] */
@@ -664,6 +867,8 @@ interface ModularItemOption {
 	 * defaults to `true`
 	 */
 	ChangeWhenLocked?: boolean;
+	/** Whether or not the option should open a subscreen in the extended item menu */
+	HasSubscreen?: boolean;
 }
 
 /** An object containing modular item configuration for an asset. Contains all of the necessary information for the
@@ -751,6 +956,10 @@ interface TypedItemConfig {
 	 * items to run additional validation for cases that aren't covered by configuration
 	 */
 	Validate?: TypedItemValidateCallback;
+	/**
+	 * Contains custom dictionary entries in the event that the base ones do not suffice.
+	 */
+	Dictionary?: TypedItemDictionaryCallback[];
 }
 
 interface TypedItemDialogConfig {
@@ -770,6 +979,7 @@ interface TypedItemDialogConfig {
 	 * will include the name of the new option, and depending on the chat setting, the name of the previous option:
 	 * - For chat setting `FROM_TO`: `<chatPrefix><oldOptionName>To<newOptionName>`
 	 * - For chat setting `TO_ONLY`: `<chatPrefix><newOptionName>`
+	 * Defaults to `"<GroupName><AssetName>Set"`
 	 */
 	ChatPrefix?: string | TypedItemChatCallback;
 	/**
@@ -809,6 +1019,10 @@ interface TypedItemData {
 	 */
 	chatTags: CommonChatTags[];
 	/**
+	 * Contains custom dictionary entries in the event that the base ones do not suffice.
+	 */
+	dictionary?: TypedItemDictionaryCallback[];
+	/**
 	 * The chat message setting for the item. This can be provided to allow
 	 * finer-grained chatroom message keys for the item. Defaults to {@link TypedItemChatSetting.TO_ONLY}
 	 */
@@ -828,6 +1042,31 @@ interface TypedItemData {
 }
 
 /**
+ * An object containing data about the type change that triggered the chat message
+ * @param {Character} C - A reference to the character wearing the item
+ * @param {ExtendedItemOption} previousOption - The previously selected type option
+ * @param {ExtendedItemOption} newOption - The newly selected type option
+ * @param {number} previousIndex - The index of the previously selected type option in the item's options
+ * config
+ * @param {number} newIndex - The index of the newly selected type option in the item's options config
+ */
+interface TypedItemChatData {
+	C: Character;
+	previousOption: ExtendedItemOption;
+	newOption: ExtendedItemOption;
+	previousIndex: number;
+	newIndex: number;
+}
+
+/**
+ * @param {TypedItemChatData} chatData - An object containing data about the type change that triggered the chat message
+ * @returns {string} - The chat prefix that should be used for this type change
+ */
+type TypedItemChatCallback = (
+	chatData: TypedItemChatData
+) => string;
+
+/**
  * @param {object} chatData - An object containing data about the type change that triggered the chat message
  * @param {Character} chatData.C - A reference to the character wearing the item
  * @param {ExtendedItemOption} chatData.previousOption - The previously selected type option
@@ -835,18 +1074,95 @@ interface TypedItemData {
  * @param {number} chatData.previousIndex - The index of the previously selected type option in the item's options
  * config
  * @param {number} chatData.newIndex - The index of the newly selected type option in the item's options config
- * @returns {string} - The chat prefix that should be used for this type change
+ * @returns {[{ Tag: string, Text: string }]} - The dictionary entry to append to the dictionary.
  */
-type TypedItemChatCallback = (
-	chatData: { C: Character; previousOption: ExtendedItemOption; newOption: ExtendedItemOption; previousIndex: number; newIndex: number; }
-) => string;
+type TypedItemDictionaryCallback = (
+	chatData: TypedItemChatData
+) => { Tag: string, Text: string };
 
 /**
  * @param {Character} C - A reference to the character wearing the item
  * @param {ExtendedItemOption} Option - The newly selected type option
  * @returns {string} - Returns a non-empty message string if the item failed validation, or an empty string otherwise
  */
-type TypedItemValidateCallback = (C: Character, Option: ExtendedItemOption) => string;
+type TypedItemValidateCallback = (
+	C: Character,
+	Item: Item,
+	Option: ExtendedItemOption,
+	CurrentOption?: ExtendedItemOption
+) => string;
 
+/**
+ * A parameter object containing information used to validate and sanitize character appearance update diffs. An
+ * appearance update has a source character (the player that sent the update) and a target character (the character
+ * being updated). What is allowed in an update varies depending on the status of the target character in relation to
+ * the source character (i.e. whether they are the target's lover/owner, or the target themselves, and also whether or
+ * not they have been whitelisted by the target).
+ */
+interface AppearanceUpdateParameters {
+	/** The character whose appearance is being updated */
+	C: Character;
+	/** Whether or not the source player is the same as the target player */
+	fromSelf: boolean;
+	/**
+	 * Whether or not the source player has permissions to use owner-only items (i.e. they are either the target
+	 * themselves, or the target's owner)
+	 */
+	fromOwner: boolean;
+	/**
+	 * Whether or not the source player has permissions to use lover-only items (i.e. they are the target themselves,
+	 * one of the target's lovers, or the target's owner, provided the target's lover rules permit their owner using
+	 * lover-only items)
+	 */
+	fromLover: boolean;
+	/** The member number of the source player */
+	sourceMemberNumber: number;
+}
+
+/**
+ * A wrapper object containing the results of a diff resolution. This includes the final item that the diff resolved to
+ * (or null if the diff resulted in no item, for example in the case of item removal), along with a valid flag which
+ * indicates whether or not the diff was fully valid or not.
+ */
+interface ItemDiffResolution {
+	/**
+	 * The resulting item after resolution of the item diff, or null if the diff resulted in no item being equipped in
+	 * the given group
+	 */
+	item: Item | null;
+	/**
+	 * Whether or not the diff was fully valid. In most cases, an invalid diff will result in the whole appearance
+	 * update being rolled back, but in some cases the change will be accepted, but some properties may be modified to
+	 * keep the resulting item valid - in both situations, the valid flag will be returned as false, indicating that a
+	 * remedial appearance update should be made by the target player.
+	 */
+	valid: boolean;
+}
+
+/**
+ * A wrapper object containing the results of an appearance validation. Contains a sanitized appearance array and a
+ * valid flag which indicates whether or not the appearance was fully valid or not.
+ */
+interface AppearanceValidationWrapper {
+	/** The resulting appearance after validation */
+	appearance: Item[];
+	/**
+	 * Whether or not the appearance was valid. A value of false indicates that the appearance has been modified, and a
+	 * remedial appearance update should be made by the target player.
+	 */
+	valid: boolean;
+}
 
 //#endregion
+
+type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+interface ICommand {
+	Tag: string;
+	Description?: string;
+	Reference?: string;
+	Action?: (this: Optional<ICommand, 'Tag'>, args: string, msg: string, parsed: string[]) => void
+	Prerequisite?: (this: Optional<ICommand, 'Tag'>) => boolean;
+	AutoComplete?: (this: Optional<ICommand, 'Tag'>, parsed: string[], low: string, msg: string) => void;
+	Clear?: false;
+}
